@@ -6,11 +6,9 @@ subws_areas <- list("tre" = 14.1, "uql" = 12.5, "wil" = 26.5,
                      "zie" = 25.3, "sfc" = 424, "que" = 394.3)
 
 # SCRIPT 1
-dir_in_raw <- "input/raw"
+dir_in <- "input"
 
 dir_out <- "output"
-
-dir_out_flux <- file.path(dir_out_processed, "flux_files")
 
 # SCRIPT 2
 
@@ -21,4 +19,4 @@ cfg.periods <- list("alltime", "fell_and_yard_period", "fell_period", "HY17", "H
 cfg.seasons <- list("alltime", "baseflow", "fall_wetup", "rainy", "spring", 
                 "storm_events")
 
-psegs <- ssegs <- as.list(as.character(1:9))
+cfg.psegs <- cfg.ssegs <- as.list(as.character(1:9))

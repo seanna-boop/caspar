@@ -1,17 +1,15 @@
 library(tidyverse)
 library(lubridate)
 
-source("config.R")
+source("R/config.R")
 
 # get input files (flow + chem files for each sub-watershed)
 
 #"C:/Users/sgm/Google Drive/Caspar Creek_sgm/NEW_data/raw/input/"
-input_files <- list.files(dir_in_raw)
+input_files <- list.files(file.path(dir_in, "raw"))
 
-dir_out_processed#"C:/Users/sgm/Google Drive/Caspar Creek_sgm/NEW_data/processed/"
-
-if(!dir.exists(dir_out_processed))
-  dir.create(dir_out_processed, recursive = TRUE)
+if(!dir.exists(dir_out))
+  dir.create(dir_out, recursive = TRUE)
 
 # find flow data
 flo_files <- input_files[grepl(input_files, pattern="flo")]
@@ -24,7 +22,7 @@ chem_files <- input_files[grepl(input_files, pattern="chem")]
 rain_files <- input_files[grepl(input_files, pattern="rnf")]
 
 # load the flow files, convert DATE+TIME to POSIXdatetime
-tb_flo <- suppressWarnings(lapply(file.path(dir_in_raw, flo_files), 
+tb_flo <- suppressWarnings(lapply(file.path(dir_in, 'raw', flo_files), 
                                    read_csv, col_names=TRUE))
 tb_flo <- lapply(tb_flo, mutate, 
                   datetime = as.POSIXct(paste0(DATE, " ", TIME),
@@ -32,7 +30,7 @@ tb_flo <- lapply(tb_flo, mutate,
                                         tz="Etc/GMT+7"))
 
 # load the chem file(s), convert dt to POSIX datetime (in this case only one file)
-tb_chem <- suppressWarnings(lapply(file.path(dir_in_raw, chem_files), 
+tb_chem <- suppressWarnings(lapply(file.path(dir_in, 'raw', chem_files), 
                                    read_csv, col_names=TRUE))
 # sorry, i changed this on you again: dt -> datetime
 tb_chem <- lapply(tb_chem, mutate, datetime = as.POSIXct(datetime,
@@ -40,7 +38,7 @@ tb_chem <- lapply(tb_chem, mutate, datetime = as.POSIXct(datetime,
                                                          tz="Etc/GMT+7"))
 
 # load the rain file(s), convert dt to POSIX (in this case, again, only one file)
-tb_rain <- suppressWarnings(lapply(file.path(dir_in_raw, rain_files), 
+tb_rain <- suppressWarnings(lapply(file.path(dir_in, 'raw', rain_files), 
                                    read_csv, col_names=TRUE))
 # View(tb_rain[[1]])
 # set rainfall column names
@@ -171,13 +169,14 @@ lapply(names(tb_merge), function(subws_name) {
   tb <- tb_merge[[subws_name]] 
   if(length(tb)) {
     # create directories as needed
-    if(!dir.exists(paste0(dir_out_processed, "/", subws_name, "/ti")))
-      dir.create(paste0(dir_out_processed, "/", subws_name, "/ti"), recursive = TRUE)
-    if(!dir.exists(paste0(dir_out_processed, "/flux_files")))
-      dir.create(paste0(dir_out_processed, "/flux_files"), recursive = TRUE)
+    if(!dir.exists(paste0(dir_out, "/", subws_name, "/ti")))
+      dir.create(paste0(dir_out, "/", subws_name, "/ti"), recursive = TRUE)
+    if(!dir.exists(paste0(dir_out, "/flux_files")))
+      dir.create(paste0(dir_out, "/flux_files"), recursive = TRUE)
     
     # write files to subws folders and flux file folder
-    write_csv(x = tb, path = file.path(dir_out_processed, subws_name, "ti", paste0(subws_name, "_flux.csv")))
-    write_csv(x = tb, path = file.path(dir_out_flux, paste0(subws_name, "_flux.csv")))
+    write_csv(x = tb, path = file.path(dir_out, subws_name, "ti", paste0(subws_name, "_flux.csv")))
+    write_csv(x = tb, path = file.path(dir_out, "flux_files" , paste0(subws_name, "_flux.csv")))
   }
 })
+
