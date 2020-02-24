@@ -7,3 +7,4 @@ input/raw/treflo_16-19.csv
 input/raw/sfc620rnf14-19_10min.csv
 .Rproj.user
 *.Rproj
+.Rhistory
