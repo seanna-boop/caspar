@@ -64,18 +64,22 @@ names(res)
 
 unfuckerate <- function(l) {
   if(typeof(l) == 'list') {
-    print(names(l))
     foo <-  lapply(l, unfuckerate)
-    ll.c <- lapply(foo, nrow)
-    for(n in names(l)) {
-      
+    l.c <- unlist(lapply(foo, nrow))
+    l.n <- character(0)
+    l.names <- names(l)
+    for(n in 1:length(l.names)) {
+      if(length(l.c[n]))
+        l.n <- c(l.n, rep(l.names[n], l.c[n]))
     }
-    ll.n
-    ll.r <- do.call('rbind', foo)
-    ll.r[,length(colnames(ll.r))+1] <- 
-    return(ll.r)
+    l.r <- as.data.frame(do.call('rbind', foo))
+    if(length(l.n) & length(l.r) & !is.null(l.r))
+      if(nrow(l.r) == length(l.n)) {
+         l.r <- cbind(l.r, l.n)
+      }
+    return(l.r)
   } 
   return(l)
 }
-
+uf <- unfuckerate(res)
 ```
