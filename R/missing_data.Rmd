@@ -1,0 +1,58 @@
+---
+title: "Dealing with missing data"
+output: html_document
+---
+
+```{r}
+#To deal with missing data: 
+
+#* Step 1 is to identify missing values in my chem data and impute those values (concentrations) 
+#**n = total number of water samples
+#* Step 2 is to look at missing load data to impute those values (concentrations x flo data)
+#**n = total number of flo observations
+
+
+f <- read.csv(file = "C:/Users/sgm/Google Drive/Caspar Creek_sgm/caspar/output/tb/tb_wide.csv")
+View(f)
+
+library(tidyverse)
+library(visdat)
+
+# vis_dat visualises the whole dataframe at once, and provides information about the class of the data input into R, as well as whether the data is missing or not.
+vis_dat(f)
+```
+```{r}
+
+#The function vis_miss provides a summary of whether the data is missing or not. It also provides the amount of missings in each columns.
+vis_miss(f, sort_miss=T)
+
+```
+```{r}
+
+ggplot(f, 
+       aes(x = tp, 
+           y = tn)) + 
+  geom_point()
+
+```
+```{r}
+#The problem with this is that ggplot does not handle missings be default, and removes the missing values. This makes them hard to explore. It also presents the strange question of “how do you visualise something that is not there?”. One approach to visualising missing data comes from ggobi and manet, where we replace “NA” values with values 10% lower than the minimum value in that variable.
+
+library(naniar)
+
+ggplot(f, 
+       aes(x = tp, 
+           y = tn)) + 
+  geom_miss_point() + 
+  facet_wrap(~period_name) + 
+  theme_dark()
+
+```
+```{r}
+
+#There are more visualisations available in naniar (each starting with gg_miss_) - you can see these in the “Gallery of Missing Data Visualisations” vignette..
+
+gg_miss_var(f, facet = period_name)
+
+```
+
