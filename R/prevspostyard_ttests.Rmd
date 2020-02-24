@@ -62,5 +62,20 @@ res <- lapply(split(f, f$subws_name), function(g) {
 
 names(res)
 
+unfuckerate <- function(l) {
+  if(typeof(l) == 'list') {
+    print(names(l))
+    foo <-  lapply(l, unfuckerate)
+    ll.c <- lapply(foo, nrow)
+    for(n in names(l)) {
+      
+    }
+    ll.n
+    ll.r <- do.call('rbind', foo)
+    ll.r[,length(colnames(ll.r))+1] <- 
+    return(ll.r)
+  } 
+  return(l)
+}
 
 ```
