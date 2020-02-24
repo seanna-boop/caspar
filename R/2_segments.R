@@ -1,4 +1,8 @@
 # 2_subws-time-slice.R
+
+#this script outputs period files for each subwatershed, "time period", and segment combo into:
+#Google Drive\Caspar Creek_sgm\caspar\output\period_files
+
 library(tidyverse)
 
 source("R/config.R")
@@ -30,7 +34,9 @@ within_interval <- function(.time, subws, period = "alltime", segment = NULL) {
 
 input_files <- list.files(file.path(dir_out, "flux_files"), full.names = TRUE)
 
+
 flux_files <- as.list(input_files[grepl(basename(input_files), pattern="flux")])
+
 
 res <- lapply(flux_files, function(ff) {
   # read flux file
@@ -49,21 +55,21 @@ res <- lapply(flux_files, function(ff) {
     flux.sub <- flux[within_interval(flux$datetime, subws, pp), ]
   
     # create output dir if needed
-    if(!dir.exists(file.path(dir_out, subws ,"ti", pp)))
-      dir.create(file.path(dir_out, subws ,"ti", pp), recursive = TRUE)
-    
-    # write whole dataset for period to file
-    write_csv(path = file.path(dir_out, subws ,"ti", paste0(subws, "_" , pp, ".csv")), 
-              x = flux.sub)  
-   
-     # create output dir if needed    
-     if(!dir.exists(file.path(dir_out, "period_files")))
-      dir.create(file.path(dir_out, "period_files"), recursive = TRUE)
-    
-    # write whole dataset for period to file    
-    write_csv(path = file.path(dir_out, "period_files", paste0(subws, "_" , pp, ".csv")),
-              x = flux.sub)   
-    
+    # if(!dir.exists(file.path(dir_out, subws ,"ti", pp)))
+    #   dir.create(file.path(dir_out, subws ,"ti", pp), recursive = TRUE)
+    # 
+    # # write whole dataset for period to file
+    # write_csv(path = file.path(dir_out, subws ,"ti", paste0(subws, "_" , pp, ".csv")), 
+    #           x = flux.sub)  
+    # 
+    #  # create output dir if needed    
+    #  if(!dir.exists(file.path(dir_out, "period_files")))
+    #   dir.create(file.path(dir_out, "period_files"), recursive = TRUE)
+    # 
+    # # write whole dataset for period to file    
+    # write_csv(path = file.path(dir_out, "period_files", paste0(subws, "_" , pp, ".csv")),
+    #           x = flux.sub)   
+    # 
     # print(unique(period.sub$pseg))
     
     # iterate through period sedments

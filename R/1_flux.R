@@ -4,8 +4,6 @@ library(lubridate)
 source("R/config.R")
 
 # get input files (flow + chem files for each sub-watershed)
-
-#"C:/Users/sgm/Google Drive/Caspar Creek_sgm/NEW_data/raw/input/"
 input_files <- list.files(file.path(dir_in, "raw"))
 
 if(!dir.exists(dir_out))
@@ -32,10 +30,13 @@ tb_flo <- lapply(tb_flo, mutate,
 # load the chem file(s), convert dt to POSIX datetime (in this case only one file)
 tb_chem <- suppressWarnings(lapply(file.path(dir_in, 'raw', chem_files), 
                                    read_csv, col_names=TRUE))
-# sorry, i changed this on you again: dt -> datetime
 tb_chem <- lapply(tb_chem, mutate, datetime = as.POSIXct(datetime,
                                                          format="%m/%d/%Y %H:%M", 
                                                          tz="Etc/GMT+7"))
+tb_chem[[1]]$datetime <- as.POSIXct(tb_chem[[1]]$datetime, 
+                                    # format="%m/%d/%Y %H:%M",  ##################################ask why it throws error
+                                    # when this format line is included??
+                                    tz="Etc/GMT+7")
 
 # load the rain file(s), convert dt to POSIX (in this case, again, only one file)
 tb_rain <- suppressWarnings(lapply(file.path(dir_in, 'raw', rain_files), 
@@ -49,6 +50,11 @@ tb_rain <- lapply(tb_rain, mutate,  datetime = as.POSIXct(datetime,
                                                      # note lowercase y in date format
                                                           format="%m/%d/%Y %H:%M", 
                                                           tz="Etc/GMT+7"))
+tb_rain[[1]]$datetime <- as.POSIXct(paste0("20", as.character(tb_rain[[1]]$datetime)), 
+                                    # format="%m/%d/%Y %H:%M",  ##################################ask why it throws error
+                                    # when this format line is included??
+                                    tz="Etc/GMT+7")
+class(tb_rain[[1]]$datetime)
 
 # list of tbl, produced by iterating over sub-watersheds by name
 tb_merge <- lapply(as.list(subws_names), function(subws_name) {
@@ -65,11 +71,12 @@ tb_merge <- lapply(as.list(subws_names), function(subws_name) {
   
   # only process if we have a non-NULL index for flow & chem
   if(length(idx_flo[[1]]) & length(idx_chem[[1]])) {
-    
+    idx_flo <- idx_flo[[1]]
+    idx_chem <- idx_chem[[1]]
     # get a tb.flow element corresponding to idx.flow
     # sort by datetime
     # calculate deltaT between flow readings
-    flo <- tb_flo[[as.numeric(idx_flo)[1]]] %>% 
+    flo <- tb_flo[[as.numeric(idx_flo)]] %>% 
       arrange(datetime) %>% 
       mutate(dlt = lead(datetime) - datetime)
     
@@ -81,7 +88,7 @@ tb_merge <- lapply(as.list(subws_names), function(subws_name) {
     flo$subws <- subws_name
     
     # get chem data from list always 1
-    chem <- tb_chem[[as.numeric(idx_chem)[1]]]
+    chem <- tb_chem[[as.numeric(idx_chem)]]
     
     # round time
     chem$time_round <- round_date(chem$datetime, unit="10 minutes")
@@ -141,10 +148,13 @@ tb_merge <- lapply(as.list(subws_names), function(subws_name) {
     
     out <- left_join(res2, res1, "date_group")
     
+    # shift volumes to correct index for length 2 roll-wise average
+    out$vol_shift <- c(NA, out$volume_liters[1:(nrow(out) - 1)])
+    
     # define functions (these are _unique_ to out and subws_name)
-    grams <- (function(x) (x * out$volume_liters / 1000))
-    kg <- (function(x) (x * out$volume_liters / 1000000))
-    ha <- (function(x) (x * out$volume_liters / 1000000 / subws_areas[[subws_name]]))
+    grams <- (function(x) (x * out$vol_shift / 1000))
+    kg <- (function(x) (x * out$vol_shift / 1000000))
+    ha <- (function(x) (x * out$vol_shift / 1000000 / subws_areas[[subws_name]]))
     
     # area correction for rainfall values by watershed -- same units as flow
     #   [rainfall, cm] * [watershed area, cm^2] / [cm^2 per L] (assume density 1)         
@@ -175,8 +185,8 @@ lapply(names(tb_merge), function(subws_name) {
       dir.create(paste0(dir_out, "/flux_files"), recursive = TRUE)
     
     # write files to subws folders and flux file folder
-    write_csv(x = tb, path = file.path(dir_out, subws_name, "ti", paste0(subws_name, "_flux.csv")))
-    write_csv(x = tb, path = file.path(dir_out, "flux_files" , paste0(subws_name, "_flux.csv")))
+    write_csv(x = tb, path = file.path(dir_out, subws_name, "ti", paste0(subws_name, "_flux_2.csv")))
+    write_csv(x = tb, path = file.path(dir_out, "flux_files" , paste0(subws_name, "_flux_2.csv")))
   }
 })
 

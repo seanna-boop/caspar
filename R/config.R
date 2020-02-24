@@ -16,7 +16,9 @@ cfg.periods <- list("alltime", "fell_and_yard_period", "fell_period", "HY17", "H
                 "HY19", "HY20", "post_fell", "post_yard", "pre_fell", "pre_yard", 
                 "yard_period", "wet_years", "dry_years")
 
-cfg.seasons <- list("alltime", "baseflow", "fall_wetup", "rainy", "spring", 
+cfg.seasons <- list("alltime", "summer", "fall", "winter", "spring", 
                 "storm_events")
 
-cfg.psegs <- cfg.ssegs <- as.list(as.character(1:9))
+
+
+cfg.psegs <- cfg.ssegs <- as.list(as.character(1:9))  # 1:however many psegs or ssegs there are
